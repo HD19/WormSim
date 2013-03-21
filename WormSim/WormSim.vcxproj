@@ -39,7 +39,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\lib\boost\boost_1_53_0;$(IncludePath)</IncludePath>
+    <IncludePath>C:\lib\boost_1_53_0;C:\lib\yaml-cpp\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\lib\yaml-cpp\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -49,6 +50,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libyaml-cppmdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -66,9 +68,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetMap.cpp" />
+    <ClCompile Include="NetNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
+    <ClInclude Include="NetMap.h" />
+    <ClInclude Include="NetNode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

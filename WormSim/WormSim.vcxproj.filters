@@ -18,9 +18,21 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NetMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

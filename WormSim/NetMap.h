@@ -1,23 +1,28 @@
 #ifndef _NETMAP_H
 #define _NETMAP_H
 
-#include "Common.h"
-#include "Node.h"
+#include <iostream>
+#include <string>
+#include <boost\graph\undirected_graph.hpp>
+#include "NetNode.h"
+
+
+typedef boost::undirected_graph<> Graph;
 
 using namespace std;
 
 class NetworkMap
 {
 public:
-	//Not sure yet
 	NetworkMap();
-
+	NetworkMap(string testStr);
 private:
+	bool readConfiguration();
 	uint numNodes;
 	string description;
 	string address;
 	Graph netGraph;
-	vector<NodeDescriptor*>; //Defines all the different node types.
+	vector<NodeDescriptor*> nodeTypes; //Defines all the different node types.
 
 };
 

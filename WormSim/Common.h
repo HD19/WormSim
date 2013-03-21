@@ -2,7 +2,7 @@
 #define _COMMON_H
 
 #define uint unsigned int
-
+//STL
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -10,9 +10,10 @@
 #include <vector>
 
 
-#include <boost/graph/undirected_graph.hpp>
+//HEADERS
+#include "NetNode.h"
+#include "NetMap.h"
 
-typedef boost::undirected_graph<> Graph;
 
 
 
