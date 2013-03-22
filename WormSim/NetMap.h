@@ -6,6 +6,7 @@
 #include <boost\graph\undirected_graph.hpp>
 #include "NetNode.h"
 
+#define NET_CONFIG_PATH "network.yml"
 
 typedef boost::undirected_graph<> Graph;
 
@@ -15,7 +16,6 @@ class NetworkMap
 {
 public:
 	NetworkMap();
-	NetworkMap(string testStr);
 private:
 	bool readConfiguration();
 	uint numNodes;

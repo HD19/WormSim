@@ -1,0 +1,7 @@
+#Remember, keys are case sensitivve
+
+helloworld:
+    integer-prop: 9
+    bool-prop: false
+    string-prop: 'This is a string of text!'
+    

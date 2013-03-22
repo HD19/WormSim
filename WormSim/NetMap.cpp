@@ -1,10 +1,5 @@
 #include "NetMap.h"
 
-NetworkMap::NetworkMap(string testStr)
-{
-	this->address = testStr;
-}
-
 NetworkMap::NetworkMap()
 {
 	//Construct and initialize a graph
@@ -18,9 +13,20 @@ NetworkMap::NetworkMap()
 
 bool NetworkMap::readConfiguration()
 {
-	//We're gonna practice generating a YAML file
-   YAML::Emitter out;
-   out << "Hello, World!";
-   cout << "Here's the output YAML:\n" << out.c_str(); // prints "Hello, World!"
-   return true;
+	//YAML reading magic should happen here!
+	try
+	{
+		YAML::Node netConf = YAML::LoadFile(NET_CONFIG_PATH);
+		//Get the routers
+		cout << netConf["helloworld"] << endl;
+		
+		return true;
+	}
+	catch(exception& ex)
+	{
+		cout << "[+] Error parsing network file! " << endl << ex.what() << endl;
+
+		return false;
+	}
+
 }
