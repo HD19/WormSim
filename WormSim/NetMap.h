@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <boost\graph\undirected_graph.hpp>
 #include "NetNode.h"
+
 
 #define NET_CONFIG_PATH "network.yml"
 
