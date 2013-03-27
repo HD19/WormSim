@@ -13,7 +13,9 @@ class Vulnerability
 public:
 	Vulnerability();
 	Vulnerability(string identifier, string description);
-	void operator >> (const YAML::Node& node, Vulnerability& rhs);
+	void operator << (const YAML::Node& node);
+	const string& getID();
+	const string& getDesc();
 private:
 	string vulnID;
 	string desc;
@@ -38,4 +40,8 @@ class Gateway
 {
 public:
 	Gateway();
+private:
+	string gateID;
+};
+
 #endif

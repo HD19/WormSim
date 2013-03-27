@@ -10,12 +10,22 @@ Vulnerability::Vulnerability(string identifier, string description): vulnID(iden
 
 }
 
-void Vulnerability::operator >> (const YAML::Node& node, Vulnerability& rhs)
+const string& Vulnerability::getID()
+{
+	return this->vulnID;
+}
+
+const string& Vulnerability::getDesc()
+{
+	return this->desc;
+}
+
+void Vulnerability::operator << (const YAML::Node& node)
 {
 	try
 	{
-		node["ID"] >> rhs.vulnID;
-		node["Desc"] >> rhs.desc;
+		node["ID"] >> this->vulnID;
+		node["Desc"] >> this->desc;
 	}
 	catch(exception& ex)
 	{

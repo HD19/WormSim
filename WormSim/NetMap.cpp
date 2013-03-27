@@ -46,10 +46,10 @@ bool NetworkMap::readConfiguration()
 			{
 				//Create an object for each sequence object
 				//For testing, let's just print the stuff
-				string ID, desc;
-				(*it)["ID"] >> ID;
-				(*it)["Desc"] >> desc;
-				cout << "ID: " << ID << endl << "Description: " << desc << endl;
+				Vulnerability vuln;
+				//iterator should be pointing at a set entry
+				vuln << (*it);
+				cout << "ID: " << vuln.getID() << endl << "Description: " << vuln.getDesc() << endl;
 			}
 
 			cout << "[+] Done parsing Vulnerabilities section!" << endl;
