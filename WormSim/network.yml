@@ -1,21 +1,20 @@
-- name: Ogre
-  position: [0, 5, 0]
-  powers:
-    - name: Club
-      damage: 10
-    - name: Fist
-      damage: 8
-- name: Dragon
-  position: [1, 0, 10]
-  powers:
-    - name: Fire Breath
-      damage: 25
-    - name: Claws
-      damage: 15
-- name: Wizard
-  position: [5, -3, 0]
-  powers:
-    - name: Acid Rain
-      damage: 50
-    - name: Staff
-      damage: 3
+Vulnerabilities:
+    - ID: CWE01
+      Desc: Poor fan insulation leads to computer infection
+    - ID: CWE02
+      Desc: Windows 98 Ping of Death vulnerability
+    - ID: CWE03
+      Desc: Autoexec script permissions granted globally to any and all devices, including network interfaces
+    - ID: CWE04
+      Desc: fingerd process vulnerability
+      
+NodeTypes:
+    - ID: WIN98
+      Desc: Windows 98 machine left thoghroughly unpatched and poorly maintained
+      Vulns: [CWE01, CWE02, CWE03]
+    - ID: LIN26
+      Desc: Linux running the 2.6 kernel
+      Vulns: [CWE04]
+    - ID: WIN7
+      Desc: Patched Windows 7 machine
+      Vulns: [CWE01, CWE03]

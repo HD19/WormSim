@@ -8,15 +8,34 @@
 
 using namespace std;
 
+class Vulnerability
+{
+public:
+	Vulnerability();
+	Vulnerability(string identifier, string description);
+	void operator >> (const YAML::Node& node, Vulnerability& rhs);
+private:
+	string vulnID;
+	string desc;
+};
+
 class NodeDescriptor
 {
 public:
 	NodeDescriptor();
 	NodeDescriptor(string desc, uint vulns);
+	uint GetVulnVector();
+	void setID();
+	void addVuln(Vulnerability* toAdd);
+	void removeVuln(Vulnerability* toRemove);
 private:
+	string nodeID;
 	string description;
-	uint vulnVector;
+	vector<Vulnerability*> vulnVect;
 };
 
-
+class Gateway
+{
+public:
+	Gateway();
 #endif
