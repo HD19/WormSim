@@ -24,7 +24,8 @@ private:
 	string description;
 	string address;
 	Graph netGraph;
-	vector<NodeDescriptor*> nodeTypes; //Defines all the different node types.
+	map<string, Vulnerability*> vulnMap;
+	map<string, NodeDescriptor*> nodeTypeMap;
 
 };
 

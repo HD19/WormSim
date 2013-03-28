@@ -39,3 +39,13 @@ NodeDescriptor::NodeDescriptor()
 	return;
 }
 
+NodeDescriptor::NodeDescriptor(string ID, string desc): nodeID(ID), description(desc)
+{
+	return;
+}
+
+void NodeDescriptor::operator<<(const YAML::Node& node)
+{
+	//Look at the spec and fill in the appropriate variables
+
+}

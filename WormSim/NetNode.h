@@ -2,6 +2,7 @@
 #define _NETNODE_H
 
 #include <yaml-cpp\yaml.h>
+#include <map>
 
 #define uint unsigned int
 
@@ -25,15 +26,17 @@ class NodeDescriptor
 {
 public:
 	NodeDescriptor();
-	NodeDescriptor(string desc, uint vulns);
+	NodeDescriptor(string ID, string desc);
+	void operator << (const YAML::Node& node);
 	uint GetVulnVector();
-	void setID();
+	string& getID();
 	void addVuln(Vulnerability* toAdd);
 	void removeVuln(Vulnerability* toRemove);
 private:
 	string nodeID;
 	string description;
-	vector<Vulnerability*> vulnVect;
+	map<string, Vulnerability*> vulnMap;
+	map<string, NodeDescriptor*> nodeTypeMap;
 };
 
 class Gateway

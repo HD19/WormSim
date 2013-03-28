@@ -46,14 +46,30 @@ bool NetworkMap::readConfiguration()
 			{
 				//Create an object for each sequence object
 				//For testing, let's just print the stuff
-				Vulnerability vuln;
+				Vulnerability* tmpVuln = new Vulnerability;
 				//iterator should be pointing at a set entry
-				vuln << (*it);
-				cout << "ID: " << vuln.getID() << endl << "Description: " << vuln.getDesc() << endl;
+				(*tmpVuln) << (*it);
+				vulnMap[tmpVuln->getID()] = tmpVuln;
+				cout << "Added : " << "ID: " << tmpVuln->getID() << endl << "Description: " << tmpVuln->getDesc() << endl;
 			}
 
 			cout << "[+] Done parsing Vulnerabilities section!" << endl;
 
+			const YAML::Node& netNode = netDoc["NodeTypes"];
+			if(!netNode.size())
+			{
+				cout << "[-] Error: NodeType section doesn't exist" << endl;
+				return false;
+			}
+
+			for( YAML::Iterator it = netNode.begin(); it != netNode.end(); it++)
+			{
+				//Sequence of node types
+				NodeDescriptor* tmpDesc = new NodeDescriptor;
+
+				(*tmpDesc) << (*it);
+				nodeTypeMap[tmpDesc->getID()] = tmpDesc;
+			}
 		}
 			/***********************************************
 			 * This here's a simple example, check out example.yml to see what this parses.
