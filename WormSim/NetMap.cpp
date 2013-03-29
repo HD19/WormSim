@@ -65,7 +65,7 @@ bool NetworkMap::readConfiguration()
 			for( YAML::Iterator it = netNode.begin(); it != netNode.end(); it++)
 			{
 				//Sequence of node types
-				NodeDescriptor* tmpDesc = new NodeDescriptor;
+				NodeType* tmpDesc = new NodeType;
 
 				(*tmpDesc) << (*it);
 				nodeTypeMap[tmpDesc->getID()] = tmpDesc;
