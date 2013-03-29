@@ -153,3 +153,75 @@ void NodeType::removeVulns(VulnVect& toRem)
 	cout << " [+] Removed " << okRem << " of " << toRem.size() << endl;
 	return;
 }
+
+Gateway::Gateway()
+{
+	return;
+}
+
+Gateway::Gateway(string ID, string addr, string desc):  gateID(ID), ipAddr(addr), desc(desc)
+{
+
+	return;
+}
+
+void Gateway::operator << (const YAML::Node& node)
+{
+	//Assuming gateway has all the right nodes.
+	try
+	{
+		node["ID"] >> this->gateID;
+		node["Desc"] >> this->desc;
+		node["Address"] >> this->ipAddr;
+
+		const YAML::Node& ntNode = node["NodeTypes"];
+		for (YAML::Iterator it = ntNode.begin(); it != ntNode.end() ; it++)
+		{
+			string tmpNTName;
+			(*it) >> tmpNTName;
+			
+			//must resolve this link later
+			this->nodeTypesToAdd.push_back(tmpNTName);
+		}
+
+		const YAML::Node& distNode = node["DistType"];
+		//Check what the first entry is, if it's random, then mark random flag.
+		string distConf;
+
+		//For distribution to be random, first entry MUST be random.
+		distNode >> distConf;
+		if( distConf == "Random" || distConf == "random" )
+		{
+			//generate in resolution step
+			this->subGraphDist = GraphDist::Random;
+		}
+		else if( distConf == "Count" || distConf == "count" )
+		{
+			this->subGraphDist = GraphDist::Count;
+
+			//define and read in our count matrix.
+			for (YAML::Iterator it = distNode.begin(); it != distNode.end(); it++)
+			{
+				
+			}
+		}
+		else if( distConf == "Route" || distConf == "route" )
+		{
+			this->subGraphDist = GraphDist::Routes;
+
+			for (YAML::Iterator it = distNode.begin(); it != distNode.end(); it++)
+			{
+				
+			}
+		}
+		else
+		{
+			throw new exception("Couldn't determine graph type!");
+		}
+	}
+	catch (exception& ex)
+	{
+		cout << "[-] Error parsing Gateway node:" << endl << ex.what() << endl;
+	}
+	return;
+}

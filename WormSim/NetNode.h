@@ -4,7 +4,6 @@
 #include <yaml-cpp\yaml.h>
 
 #include <boost\graph\undirected_graph.hpp>
-#include <boost\asio\ip\address.hpp>
 #include <map>
 
 #define uint unsigned int
@@ -12,6 +11,8 @@
 using namespace std;
 
 typedef boost::undirected_graph<> Graph;
+
+enum class GraphDist { Random, Range, Count, Routes };
 
 class Vulnerability
 {
@@ -49,19 +50,27 @@ private:
 	vector<string> vulnsToAdd; //Can't store references as they might be destroyed when the YAML::Node disappears.
 };
 
+typedef vector<NodeType*> NTVect;
+typedef vector<NodeType*>::iterator NTVectIter;
+
 class Gateway
 {
 public:
 	Gateway();
-	Gateway(string ID, string desc);
+	Gateway(string ID, string addr, string desc);
+	void operator << (const YAML::Node& node);
 private:
-	bool generateSubGraph();
+	bool generateSubGraph(); // Will generate a graph based on the given configuration and distribution.
+	bool generateSubGraph(map<string, int>& nodeMap);
+	bool generateSubGraph(map<string, vector<string>>& nodeMap);
+	GraphDist subGraphDist;
 	string gateID;
 	string desc;
 	string ipAddr; //String representation of IP, could be a range or what have you, need to build a utility for dealing with this
-	vector<NodeType*> nodeTypes;
+	NTVect nodeTypes;
+	vector<string> nodeTypesToAdd;	//Store node types that need to be linked up. They should be in the NetMap's map later.
 	Graph gatewayGraph; //Node infectiong raph.
 	
-};
 
+};
 #endif
