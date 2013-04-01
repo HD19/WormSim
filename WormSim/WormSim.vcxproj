@@ -70,11 +70,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetMap.cpp" />
     <ClCompile Include="NetNode.cpp" />
+    <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="NetMap.h" />
     <ClInclude Include="NetNode.h" />
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

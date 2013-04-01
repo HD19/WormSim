@@ -12,7 +12,7 @@ using namespace std;
 
 typedef boost::undirected_graph<> Graph;
 
-enum class GraphDist { Random, Range, Count, Routes };
+enum class GraphDist { Random, Range, Count, Manual };
 
 class Vulnerability
 {

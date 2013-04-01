@@ -198,16 +198,29 @@ void Gateway::operator << (const YAML::Node& node)
 		else if( distConf == "Count" || distConf == "count" )
 		{
 			this->subGraphDist = GraphDist::Count;
-
+			const YAML::Node& countNode = node["NodeDist"];
 			//define and read in our count matrix.
+			//Generate a map and pass it to the function so it deletes itself.
+			map<string, int> tmpCountMap;
+
 			for (YAML::Iterator it = distNode.begin(); it != distNode.end(); it++)
 			{
-				
+				//Key | Value pairs
+				string nodeName;
+				int nodeCount;
+				it.first() >> nodeName;
+				it.second() >> nodeCount;
+
+				tmpCountMap[nodeName] = nodeCount;
+			}
+			if(!generateSubGraph(tmpCountMap))
+			{
+				throw exception("Failed to parse NodeDist counts!");
 			}
 		}
-		else if( distConf == "Route" || distConf == "route" )
+		else if( distConf == "Manual" || distConf == "manual" )
 		{
-			this->subGraphDist = GraphDist::Routes;
+			this->subGraphDist = GraphDist::Manual;
 
 			for (YAML::Iterator it = distNode.begin(); it != distNode.end(); it++)
 			{
