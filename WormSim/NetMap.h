@@ -18,7 +18,6 @@ public:
 	NetworkMap();
 private:
 	bool readConfiguration();
-	bool resolveLinks();
 	uint numNodes;
 	string description;
 	string address;

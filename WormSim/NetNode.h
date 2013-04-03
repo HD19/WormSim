@@ -5,14 +5,22 @@
 
 #include <boost\graph\undirected_graph.hpp>
 #include <map>
+#include <random>
 
 #define uint unsigned int
 
 using namespace std;
 
-typedef boost::undirected_graph<> Graph;
 
-enum class GraphDist { Random, Range, Count, Manual };
+
+typedef boost::undirected_graph<> Graph;
+typedef std::mt19937 MyRNG;
+
+//Defines how the graph is distributed across different types in the gateway subgraph
+enum class GraphDist { Random, Count/*, Range, Manual*/ };
+
+//Defines different states the node can be in
+enum class NodeStatus{ Clean, Infected, Disabled };
 
 class Vulnerability
 {
@@ -53,24 +61,39 @@ private:
 typedef vector<NodeType*> NTVect;
 typedef vector<NodeType*>::iterator NTVectIter;
 
+struct NodeInstance
+{
+	uint nAddr;
+	NodeStatus nStatus;
+	NodeType* nType;
+};
+
+typedef map<uint, NodeInstance> GatewayMap;
+
 class Gateway
 {
+	friend class NetworkMap;
 public:
 	Gateway();
-	Gateway(string ID, string addr, string desc);
+	Gateway(string ID, string desc);	//Assume maskbits is 24
+	Gateway(string ID, unsigned char maskBits, string desc);
 	void operator << (const YAML::Node& node);
+protected:
+	void setRNG(MyRNG* ref);
+	bool generateSubGraph(vector<NodeInstance*>* target); // Will generate a graph based on the given configuration and distribution.
+	bool generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>* target);
+	NTVect nodeTypes;
+	vector<string> nodeTypesToAdd;
 private:
-	bool generateSubGraph(); // Will generate a graph based on the given configuration and distribution.
-	bool generateSubGraph(map<string, int>& nodeMap);
-	bool generateSubGraph(map<string, vector<string>>& nodeMap);
+	//bool generateSubGraph(map<string, vector<string>>& nodeMap); This is if we had the manual method defined.
 	GraphDist subGraphDist;
 	string gateID;
 	string desc;
-	string ipAddr; //String representation of IP, could be a range or what have you, need to build a utility for dealing with this
-	NTVect nodeTypes;
-	vector<string> nodeTypesToAdd;	//Store node types that need to be linked up. They should be in the NetMap's map later.
-	Graph gatewayGraph; //Node infectiong raph.
-	
+	uint maskBits; //Needs to be checked by creator against assigned address.
+	uint nodeCount;
+	MyRNG* theRng;
+	//IPAddress should be defined as an actual graph description, here we're only defining the TYPE
+	//string ipAddr; //String representation of IP, could be a range or what have you, need to build a utility for dealing with this	
 
 };
 #endif

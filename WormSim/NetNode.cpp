@@ -159,10 +159,15 @@ Gateway::Gateway()
 	return;
 }
 
-Gateway::Gateway(string ID, string addr, string desc):  gateID(ID), ipAddr(addr), desc(desc)
+Gateway::Gateway(string ID, string desc):  gateID(ID), desc(desc)
 {
 
 	return;
+}
+
+void Gateway::setRNG(MyRNG* ref)
+{
+	theRng = ref;
 }
 
 void Gateway::operator << (const YAML::Node& node)
@@ -172,7 +177,14 @@ void Gateway::operator << (const YAML::Node& node)
 	{
 		node["ID"] >> this->gateID;
 		node["Desc"] >> this->desc;
-		node["Address"] >> this->ipAddr;
+		node["MaskBits"] >> this->maskBits;	//Unsigned integer, don't expect negatives
+
+		if(maskBits > 32)
+		{
+			throw new exception("MaskBits field invalid");
+		}
+
+		this->nodeCount = (unsigned int)pow(2, 32 - maskBits);
 
 		const YAML::Node& ntNode = node["NodeTypes"];
 		for (YAML::Iterator it = ntNode.begin(); it != ntNode.end() ; it++)
@@ -194,6 +206,13 @@ void Gateway::operator << (const YAML::Node& node)
 		{
 			//generate in resolution step
 			this->subGraphDist = GraphDist::Random;
+			
+			//Since we have to link this stuff up in the NetMap, we'll call this later.
+			/*if(!generateSubGraph())
+			{
+				throw exception("Failed to generate random subgraph!");
+			}*/
+
 		}
 		else if( distConf == "Count" || distConf == "count" )
 		{
@@ -213,12 +232,15 @@ void Gateway::operator << (const YAML::Node& node)
 
 				tmpCountMap[nodeName] = nodeCount;
 			}
-			if(!generateSubGraph(tmpCountMap))
+			//Since we have to link this stuff up in the NetMap, we'll call this later.
+			/*if(!generateSubGraph(tmpCountMap))
 			{
 				throw exception("Failed to parse NodeDist counts!");
-			}
+			}*/
+			
 		}
-		else if( distConf == "Manual" || distConf == "manual" )
+		//This case would have to be defined elsewhere as it's another level of abstraction
+		/*else if( distConf == "Manual" || distConf == "manual" )
 		{
 			this->subGraphDist = GraphDist::Manual;
 
@@ -226,7 +248,7 @@ void Gateway::operator << (const YAML::Node& node)
 			{
 				
 			}
-		}
+		}*/
 		else
 		{
 			throw new exception("Couldn't determine graph type!");
@@ -237,4 +259,79 @@ void Gateway::operator << (const YAML::Node& node)
 		cout << "[-] Error parsing Gateway node:" << endl << ex.what() << endl;
 	}
 	return;
+}
+
+bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
+{
+	//This is a random subgraph, generate a subgraph with a chance of each node being created to have a different type, depending on the max node count.
+	//Take advantage of the already calculated node count
+	//Generate a GatewayMap, representing edge nodes in our super graph
+	//We assume linking has already been done. Let's check anyway
+
+	if(! nodeTypes.size())
+	{
+		cout << "[-] Error generating gateway subgraph template: There are no nodetypes defined" << endl;
+		return false;
+	}
+
+	if( !theRng )
+	{
+		cout << "[-] Error generating gateway subraph template: No random number generator was set!" << endl;
+		return false;
+	}
+
+	MyRNG& rng = (*theRng);
+	//Use fancy new C++11 random module
+	//Lets assume it was seeded already.
+	//Have to create a distribution
+	std::uniform_int_distribution<uint32_t> nodeDist(0, nodeTypes.size());
+
+	for(uint i = 0; i < nodeCount ; i++)
+	{
+		uint typeIndex = nodeDist(rng);
+		if(typeIndex == nodeTypes.size())
+		{
+			//This address won't be allocated
+			continue;
+		}
+		NodeInstance* tmp = new NodeInstance;
+		//tmp-> nAddr //This has to be set by somemone else
+		tmp->nStatus = NodeStatus::Clean;
+		tmp->nType = nodeTypes[typeIndex];
+
+		//Target should be pointing at a live Gateway subgraph
+		target->push_back(tmp);
+	}
+
+	return true;
+}
+
+bool Gateway::generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>* target)
+{
+	//NodeMap is a mapping given whenever user defines a 'Count' node distribution
+	map<string,int>::iterator mit;
+
+	for(mit = nodeMap.begin(); mit != nodeMap.end(); mit++)
+	{
+		int toCreate = abs(mit->second); //just in case a negative is given.
+		
+		//Find the required node first.
+		int j = 0;
+
+		for(j = 0; j < nodeTypes.size(); j++)
+		{
+			if(nodeTypes[0]->getID() == mit->first)
+			{
+				break;
+			}
+		}
+
+		for(int i = 0; i < toCreate; i++)
+		{
+			NodeInstance* tmp = new NodeInstance;
+			tmp->nStatus = NodeStatus::Clean;
+			tmp->nType = nodeTypes[j];
+		}
+	}
+	
 }
