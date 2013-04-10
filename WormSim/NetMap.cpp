@@ -9,7 +9,7 @@ NetworkMap::NetworkMap()
 	}
 	else
 	{
-		cout << "[+] I can't parse anything!" << endl;
+		cout << "[-] Error parsing configuration file at " << NET_CONFIG_PATH << endl;
 	}
 	return;
 }
@@ -32,43 +32,121 @@ bool NetworkMap::readConfiguration()
 			//Gateways:
 			//Routes:
 
-			const YAML::Node& vulnNode = netDoc["Vulnerabilities"];
-			if(!vulnNode.size())
+			try
+			{
+				const YAML::Node& vulnNode = netDoc["Vulnerabilities"];
+
+				//Vulnerabilities have  a sequence like so
+				// - ID: UniqueID
+				//   Desc: Some human readable description
+				for( YAML::Iterator it = vulnNode.begin(); it != vulnNode.end(); it++)
+				{
+					//Create an object for each sequence object
+					//For testing, let's just print the stuff
+					Vulnerability* tmpVuln = new Vulnerability;
+					//iterator should be pointing at a set entry
+					(*tmpVuln) << (*it);
+					vulnMap[tmpVuln->getID()] = tmpVuln;
+#ifdef _DEBUG
+					cout << "Added : " << "ID: " << tmpVuln->getID() << endl << "Description: " << tmpVuln->getDesc() << endl;
+#endif
+				}
+			}
+			catch(exception& ex)
 			{
 				cout << "[-] Error: Vulnerability section doesn't exist" << endl;
 				return false;
 			}
-
-			//Vulnerabilities have  a sequence like so
-			// - ID: UniqueID
-			//   Desc: Some human readable description
-			for( YAML::Iterator it = vulnNode.begin(); it != vulnNode.end(); it++)
-			{
-				//Create an object for each sequence object
-				//For testing, let's just print the stuff
-				Vulnerability* tmpVuln = new Vulnerability;
-				//iterator should be pointing at a set entry
-				(*tmpVuln) << (*it);
-				vulnMap[tmpVuln->getID()] = tmpVuln;
-				cout << "Added : " << "ID: " << tmpVuln->getID() << endl << "Description: " << tmpVuln->getDesc() << endl;
-			}
-
+#ifdef _DEBUG
 			cout << "[+] Done parsing Vulnerabilities section!" << endl;
+#endif
+			try
+			{
+				const YAML::Node& netNode = netDoc["NodeTypes"];
+				for( YAML::Iterator it = netNode.begin(); it != netNode.end(); it++)
+				{
+					//Sequence of node types
+					NodeType* tmpDesc = new NodeType;
 
-			const YAML::Node& netNode = netDoc["NodeTypes"];
-			if(!netNode.size())
+					(*tmpDesc) << (*it);
+					nodeTypeMap[tmpDesc->getID()] = tmpDesc;
+				}
+			
+			}
+			catch(exception& ex)
 			{
 				cout << "[-] Error: NodeType section doesn't exist" << endl;
 				return false;
 			}
 
-			for( YAML::Iterator it = netNode.begin(); it != netNode.end(); it++)
+#ifdef _DEBUG
+			cout << "[+] Done parsing NodeTypes section!" << endl;
+#endif
+			try
 			{
-				//Sequence of node types
-				NodeType* tmpDesc = new NodeType;
+				const YAML::Node& gateNode = netDoc["Gateways"];
+				for( YAML::Iterator it = gateNode.begin(); it != gateNode.end(); it++)
+				{
+					Gateway* tmpGate = new Gateway();
 
-				(*tmpDesc) << (*it);
-				nodeTypeMap[tmpDesc->getID()] = tmpDesc;
+					(*tmpGate) << (*it);
+					gatewayMap[tmpGate->gateID] = tmpGate;
+				}
+			}
+			catch(exception& ex)
+			{
+				cout << "[-] Error: Gateway section doesn't exist" << endl;
+				return false;
+			}
+#ifdef _DEBUG
+			cout << "[+] Done parsing Gateways section!" << endl;
+#endif
+			try
+			{
+				//Gateways should be set. Now lets get the routes
+				const YAML::Node& routeNode = netDoc["Routes"];
+				for(YAML::Iterator it = routeNode.begin(); it != routeNode.end(); it++)
+			{
+				//Format should be GatewayID:[sequence of other gateway IDs]
+				try
+				{
+					string gatewayKey;
+					const YAML::Node& gateSequence = it.second();
+
+					it.first() >> gatewayKey;
+
+					if( gatewayMap.find(gatewayKey) == gatewayMap.end())
+					{
+						//Didn't find this gateway in the keys
+						cout << "[-] Error: Gateway: " << gatewayKey << " not found in parsed gateways" << endl;
+						return false;
+					}
+
+					for(unsigned int i = 0; i < gateSequence.size(); i++)
+					{
+						string tmpRoute;
+						gateSequence[i] >> tmpRoute;
+						if(gatewayMap.find(tmpRoute) == gatewayMap.end())
+						{
+							//Didn't find this gateway in the gateway map keys
+							cout << "[-] Error: Gateway: " << tmpRoute << " not found in parsed gateways, can't create route" << endl;
+							return false;
+						}
+						//found, push back graph connection into map
+						routeMap[gatewayKey].push_back(tmpRoute); 
+					}
+				}
+				catch(exception& ex)
+				{
+					cout << "[-] Error parsing routes section: " << ex.what() << endl;
+					return false;
+				}			
+			}
+			}
+			catch(exception& ex)
+			{
+				cout << "[-] Error: Routes section doesn't exist" << endl;
+				return false;
 			}
 		}
 			/***********************************************

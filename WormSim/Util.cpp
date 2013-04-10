@@ -1,33 +1,5 @@
 #include "Util.h"
 
-class IPAddress
-{
-public:
-	IPAddress();
-	IPAddress(string strIP);
-	IPAddress(uint intIP);
-	uint operator-(const IPAddress& rhs);
-	uint getIntRep();
-	string& getStrRep();
-	static uint intRep(string toConvert);
-	static string strRep(uint toConvert);
-	static bool   validateIP(string toValidate);
-	static bool   isCIDR(string toCheck);
-	uint   getNetworkSize();
-	IPType getType();
-	IPVect* getRangeIPs;
-private:
-	//If someone wants our range of IP's, it'll be calculated and handed out, someone else should manage it
-	void   updateReps();
-	string strAddress; //Cache one or the other
-	uint   intAddress;
-	uint   netmask;	   //Netmask for CIDR address
-	uint   addrCount; //If it's a range, this will give the size of the address space.
-	IPType addrType;
-	IPAddress* startAddr; //If this is a range, this represents the starting single address.
-	IPAddress* endAddr; //If this is a range, will represent the last address.
-};
-
 IPAddress::IPAddress()
 {
 	strAddress = "";
@@ -117,7 +89,7 @@ uint IPAddress::intRep(string toConvert)
 		try
 		{
 			getline(iss, quads[i], '.');
-			uint tmpi = atoi(quads[i].c_str);
+			uint tmpi = atoi(quads[i].c_str());
 			if( tmpi > 0xFF)
 			{
 				throw new exception("doted quad segment greater than 255");

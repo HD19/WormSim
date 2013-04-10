@@ -311,27 +311,37 @@ bool Gateway::generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>*
 	//NodeMap is a mapping given whenever user defines a 'Count' node distribution
 	map<string,int>::iterator mit;
 
-	for(mit = nodeMap.begin(); mit != nodeMap.end(); mit++)
+	try
 	{
-		int toCreate = abs(mit->second); //just in case a negative is given.
-		
-		//Find the required node first.
-		int j = 0;
-
-		for(j = 0; j < nodeTypes.size(); j++)
+		for(mit = nodeMap.begin(); mit != nodeMap.end(); mit++)
 		{
-			if(nodeTypes[0]->getID() == mit->first)
+			int toCreate = abs(mit->second); //just in case a negative is given.
+		
+			//Find the required node first.
+			int j = 0;
+
+			for(j = 0; j < nodeTypes.size(); j++)
 			{
-				break;
+				if(nodeTypes[0]->getID() == mit->first)
+				{
+					break;
+				}
+			}
+
+			for(int i = 0; i < toCreate; i++)
+			{
+				NodeInstance* tmp = new NodeInstance;
+				tmp->nStatus = NodeStatus::Clean;
+				tmp->nType = nodeTypes[j];
 			}
 		}
-
-		for(int i = 0; i < toCreate; i++)
-		{
-			NodeInstance* tmp = new NodeInstance;
-			tmp->nStatus = NodeStatus::Clean;
-			tmp->nType = nodeTypes[j];
-		}
 	}
+	catch(exception& ex)
+	{
+		cout << "[-] Error generating gateway subgraph: " << ex.what() << endl;
+		return false;
+	}
+
+	return true;
 	
 }
