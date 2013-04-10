@@ -7,6 +7,8 @@
 #include <map>
 #include <random>
 
+#include "Util.h"
+
 #define uint unsigned int
 
 using namespace std;

@@ -18,3 +18,11 @@ NodeTypes:
     - ID: WIN7
       Desc: Patched Windows 7 machine
       Vulns: [CWE01, CWE03]
+
+Gateways:
+    -ID: A
+     Desc: Basic gateway template
+     Address: 192.168.0.0
+     MaskBits: 24
+     NodeTypes: [WIN98, LIN26]
+     DistType: Random

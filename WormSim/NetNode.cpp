@@ -176,7 +176,18 @@ void Gateway::operator << (const YAML::Node& node)
 	try
 	{
 		node["ID"] >> this->gateID;
-		node["Desc"] >> this->desc;
+		if(node.FindValue("Desc"))
+		{
+			node["Desc"] >> this->desc;
+		}
+		else
+		{
+			this->desc = "None provided";
+		}
+		string tmpAddr;
+		node["Adddress"] >> tmpAddr;
+		//Even if a CIDR is provided, need to have MaskBits field
+
 		node["MaskBits"] >> this->maskBits;	//Unsigned integer, don't expect negatives
 
 		if(maskBits > 32)
