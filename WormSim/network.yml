@@ -20,9 +20,14 @@ NodeTypes:
       Vulns: [CWE01, CWE03]
 
 Gateways:
-    -ID: A
-     Desc: Basic gateway template
-     Address: 192.168.0.0
-     MaskBits: 24
-     NodeTypes: [WIN98, LIN26]
-     DistType: Random
+    - ID: A
+      Desc: Basic gateway template
+      MaskBits: 24
+      NodeTypes: [WIN98, LIN26]
+      DistType: Random
+    - ID: B
+      
+     
+Routes:
+    - A: [A, A, A]
+    - A: [A, B, B]

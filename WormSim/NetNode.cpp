@@ -184,8 +184,9 @@ void Gateway::operator << (const YAML::Node& node)
 		{
 			this->desc = "None provided";
 		}
-		string tmpAddr;
-		node["Adddress"] >> tmpAddr;
+		//Address is for the gateway, or for us to assign ourselves.
+		//string tmpAddr;
+		//node["Adddress"] >> tmpAddr;
 		//Even if a CIDR is provided, need to have MaskBits field
 
 		node["MaskBits"] >> this->maskBits;	//Unsigned integer, don't expect negatives

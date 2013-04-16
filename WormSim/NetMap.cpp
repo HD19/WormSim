@@ -186,7 +186,7 @@ bool NetworkMap::readConfiguration()
 	}
 	catch(exception& ex)
 	{
-		cout << "[+] Error parsing network file! " << endl << ex.what() << endl;
+		cout << "[-] Error parsing network file! " << endl << ex.what() << endl;
 
 		return false;
 	}

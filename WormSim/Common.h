@@ -11,12 +11,8 @@
 #include <vector>
 #include <cmath>
 #include <regex>
-
-
-//HEADERS
-#include "NetNode.h"
-#include "NetMap.h"
-
+#include <limits>
+#include <cstdint>
 
 
 

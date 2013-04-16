@@ -1,4 +1,5 @@
 #include "Common.h"
+#include "NetMap.h"
 
 
 using namespace std;
