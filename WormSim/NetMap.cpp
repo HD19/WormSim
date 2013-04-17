@@ -54,7 +54,7 @@ bool NetworkMap::readConfiguration()
 			}
 			catch(exception& ex)
 			{
-				cout << "[-] Error: Vulnerability section doesn't exist" << endl;
+				cout << "[-] Error: Vulnerability section doesn't exist: " << ex.what() << endl;
 				return false;
 			}
 #ifdef _DEBUG
@@ -75,7 +75,7 @@ bool NetworkMap::readConfiguration()
 			}
 			catch(exception& ex)
 			{
-				cout << "[-] Error: NodeType section doesn't exist" << endl;
+				cout << "[-] Error: NodeType section doesn't exist: " << ex.what() <<  endl;
 				return false;
 			}
 
@@ -95,7 +95,7 @@ bool NetworkMap::readConfiguration()
 			}
 			catch(exception& ex)
 			{
-				cout << "[-] Error: Gateway section doesn't exist" << endl;
+				cout << "[-] Error: Gateway section doesn't exist: " << ex.what() <<  endl;
 				return false;
 			}
 #ifdef _DEBUG
@@ -103,49 +103,150 @@ bool NetworkMap::readConfiguration()
 #endif
 			try
 			{
+				map<string, vector<string>> routeEntryMap;
 				//Gateways should be set. Now lets get the routes
 				const YAML::Node& routeNode = netDoc["Routes"];
+				//This is a sequence of mappings
 				for(YAML::Iterator it = routeNode.begin(); it != routeNode.end(); it++)
-			{
-				//Format should be GatewayID:[sequence of other gateway IDs]
-				try
 				{
-					string gatewayKey;
-					const YAML::Node& gateSequence = it.second();
+					//Check example file for format
+					//Looks Like:
+					//Name: [OPTIONAL]
+					//Address: 
+					//GateType:
+					//Edges:
 
-					it.first() >> gatewayKey;
-
-					if( gatewayMap.find(gatewayKey) == gatewayMap.end())
+					try
 					{
-						//Didn't find this gateway in the keys
-						cout << "[-] Error: Gateway: " << gatewayKey << " not found in parsed gateways" << endl;
-						return false;
-					}
+						RouteEntry* tmpRoute = new RouteEntry;
 
-					for(unsigned int i = 0; i < gateSequence.size(); i++)
-					{
-						string tmpRoute;
-						gateSequence[i] >> tmpRoute;
-						if(gatewayMap.find(tmpRoute) == gatewayMap.end())
+						if(const YAML::Node* nameNode = (*it).FindValue("Name"))
 						{
-							//Didn't find this gateway in the gateway map keys
-							cout << "[-] Error: Gateway: " << tmpRoute << " not found in parsed gateways, can't create route" << endl;
-							return false;
+							(*nameNode) >> tmpRoute->name;
 						}
-						//found, push back graph connection into map
-						routeMap[gatewayKey].push_back(tmpRoute); 
+
+						(*it)["Address"] >> tmpRoute->address;
+						string tmpGWType;
+
+						(*it)["GateType"] >> tmpGWType;
+
+						//Find gate type in gateway map
+						if(gatewayMap.find(tmpGWType) != gatewayMap.end())
+						{
+							tmpRoute->gateType = gatewayMap[tmpGWType];
+						}
+
+						const YAML::Node& edgeNode = (*it)["Edges"];
+						string tmpKey;
+		
+						if( tmpRoute->name != "")
+						{
+							tmpKey = tmpRoute->name;
+						}
+						else
+						{
+							tmpKey = tmpRoute->address;
+						
+						}
+						for(uint i = 0; i < edgeNode.size(); i++)
+						{
+							//Throw these edges into a temporary list for later resolution
+							//They're a sequence of strings, dumb dumb
+							string tmpStr;
+							edgeNode[i] >> tmpStr;
+							routeEntryMap[tmpKey].push_back( tmpStr );
+						}
+
+						this->routeList.push_back( tmpRoute );
+						//string gatewayKey;
+						//const YAML::Node& gateSequence = it.second();
+
+						//it.first() >> gatewayKey;
+
+						//if( gatewayMap.find(gatewayKey) == gatewayMap.end())
+						//{
+						//	//Didn't find this gateway in the keys
+						//	cout << "[-] Error: Gateway: " << gatewayKey << " not found in parsed gateways" << endl;
+						//	return false;
+						//}
+
+						//for(unsigned int i = 0; i < gateSequence.size(); i++)
+						//{
+						//	string tmpRoute;
+						//	gateSequence[i] >> tmpRoute;
+						//	if(gatewayMap.find(tmpRoute) == gatewayMap.end())
+						//	{
+						//		//Didn't find this gateway in the gateway map keys
+						//		cout << "[-] Error: Gateway: " << tmpRoute << " not found in parsed gateways, can't create route" << endl;
+						//		return false;
+						//	}
+						//	//found, push back graph connection into map
+						//	routeMap[gatewayKey].push_back(tmpRoute); 
+						//}
+
 					}
+					catch(exception& ex)
+					{
+						cout << "[-] Error parsing routes section: " << ex.what() << endl;
+						return false;
+					}			
 				}
-				catch(exception& ex)
+
+				//Route entry map is filled. For each RouteEntry, resolve the edges.
+				for( unsigned int i = 0; i < routeList.size(); i++)
 				{
-					cout << "[-] Error parsing routes section: " << ex.what() << endl;
-					return false;
-				}			
-			}
+					string routeID;
+					RouteEntry& tmpRoute = *(routeList[i]);
+
+					if(tmpRoute.name != "")
+					{
+						routeID = tmpRoute.name;
+					}
+					else
+					{
+						routeID = tmpRoute.address;
+					}
+
+					//vector for holding the results of the RouteEntry to hold the array of pointers later
+					vector<RouteEntry*> tmpVect;
+					vector<string>& routeStrVect = routeEntryMap[routeID];
+					//For each item in the route entry map...
+					for(unsigned int k = 0; k < routeStrVect.size(); k++)
+					{
+						//...map the actual entry to the structure vector
+						for(unsigned int j = 0; j < routeList.size(); j++)
+						{
+							string tmpRouteEntryStr;
+							if(i == j)
+							{
+								continue;
+							}
+							
+							if(routeList[j]->name != "")
+							{
+								tmpRouteEntryStr = routeList[j]->name;
+							}
+							else
+							{
+								tmpRouteEntryStr = routeList[j]->address;
+							}
+							
+							if(routeStrVect[k] == tmpRouteEntryStr)
+							{
+								tmpVect.push_back( routeList[j] );
+
+								break;
+							}
+						}
+					}
+					//tmpVect should now be assigned to the structure
+					tmpRoute.edges = tmpVect; //Make sure this makes a deep copy
+				}
+
 			}
 			catch(exception& ex)
 			{
-				cout << "[-] Error: Routes section doesn't exist" << endl;
+				cout << "[-] Error: Routes section doesn't exist: " << ex.what() << endl;
 				return false;
 			}
 		}

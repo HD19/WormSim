@@ -98,4 +98,12 @@ private:
 	//string ipAddr; //String representation of IP, could be a range or what have you, need to build a utility for dealing with this	
 
 };
+
+typedef struct routeEntry
+{
+	string name;
+	string address;
+	Gateway* gateType;
+	vector<struct routeEntry*> edges;
+} RouteEntry;
 #endif

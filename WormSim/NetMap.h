@@ -25,7 +25,7 @@ private:
 	map<string, Vulnerability*> vulnMap;
 	map<string, NodeType*> nodeTypeMap;
 	map<string, Gateway*> gatewayMap;
-	map<string, vector<string>> routeMap;
+	vector<RouteEntry*> routeList;
 
 };
 

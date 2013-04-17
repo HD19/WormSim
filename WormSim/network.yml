@@ -26,8 +26,39 @@ Gateways:
       NodeTypes: [WIN98, LIN26]
       DistType: Random
     - ID: B
+      Desc: Secondary gateway template
+      MaskBits: 30
+      NodeTypes: [WIN98, LIN26, WIN7]
+      DistType: Random
+    - ID: C
+      Desc: Third gateway template
+      MaskBits: 16
+      NodeTypes: [LIN26]
+      DistType: Random
       
      
 Routes:
-    - A: [A, A, A]
-    - A: [A, B, B]
+    - 
+      Name: whocares.org
+      Address: 192.168.0.1
+      GateType: A
+      Edges: [super.net, icare.com, 168.241.110.0]
+    -
+      Address: 168.241.110.0
+      GateType: A
+      Edges: [second.com]
+    -
+      Name: super.net
+      Address: 124.152.112.0
+      GateType: C
+      Edges: []
+    -
+      Name: icare.com
+      Address: 52.122.100.0
+      GateType: B
+      Edges: []
+    -
+      Name: second.com
+      Address: AUTO
+      GateType: C
+      Edges: []
