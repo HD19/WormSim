@@ -158,31 +158,6 @@ bool NetworkMap::readConfiguration()
 						}
 
 						this->routeList.push_back( tmpRoute );
-						//string gatewayKey;
-						//const YAML::Node& gateSequence = it.second();
-
-						//it.first() >> gatewayKey;
-
-						//if( gatewayMap.find(gatewayKey) == gatewayMap.end())
-						//{
-						//	//Didn't find this gateway in the keys
-						//	cout << "[-] Error: Gateway: " << gatewayKey << " not found in parsed gateways" << endl;
-						//	return false;
-						//}
-
-						//for(unsigned int i = 0; i < gateSequence.size(); i++)
-						//{
-						//	string tmpRoute;
-						//	gateSequence[i] >> tmpRoute;
-						//	if(gatewayMap.find(tmpRoute) == gatewayMap.end())
-						//	{
-						//		//Didn't find this gateway in the gateway map keys
-						//		cout << "[-] Error: Gateway: " << tmpRoute << " not found in parsed gateways, can't create route" << endl;
-						//		return false;
-						//	}
-						//	//found, push back graph connection into map
-						//	routeMap[gatewayKey].push_back(tmpRoute); 
-						//}
 
 					}
 					catch(exception& ex)
@@ -283,7 +258,13 @@ bool NetworkMap::readConfiguration()
 			//}
 		}
 		***********************************************/
-		return true;
+		//Now we're done reading the network configuration. Let's generate the graph and allocate addresses as necessary.
+		if(generateGraph())
+		{
+			return true;
+		}
+
+		return false;
 	}
 	catch(exception& ex)
 	{
@@ -291,5 +272,4 @@ bool NetworkMap::readConfiguration()
 
 		return false;
 	}
-
 }

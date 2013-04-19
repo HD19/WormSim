@@ -18,9 +18,8 @@ public:
 	NetworkMap();
 private:
 	bool readConfiguration();
+	bool generateGraph();
 	uint numNodes;
-	string description;
-	string address;
 	Graph netGraph;
 	map<string, Vulnerability*> vulnMap;
 	map<string, NodeType*> nodeTypeMap;
