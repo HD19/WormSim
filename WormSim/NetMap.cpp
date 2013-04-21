@@ -273,3 +273,25 @@ bool NetworkMap::readConfiguration()
 		return false;
 	}
 }
+
+bool NetworkMap::generateGraph()
+{
+	//For each route entry...
+	for(RouteVectorIter it = routeList.begin(); it != routeList.end(); it++)
+	{
+		//... Check the route-entry's gateway type
+		RouteEntry* curRouteEntry = (*it);
+		
+		if(gatewayMap.find(curRouteEntry->gateType->gateID) == gatewayMap.end())
+		{
+			cout << "[-] Error genertating route graph: couldn't find route gate type: " << curRouteEntry->gateType << " in gateway map!" << endl;
+			return false;
+		}
+
+		Gateway* curGateway = gatewayMap[curRouteEntry->gateType];
+
+		//For this gateway, we have to generate a subnet of nodes
+
+	}
+	return false;
+}
