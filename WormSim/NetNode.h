@@ -95,7 +95,14 @@ private:
 	MyRNG* theRng;
 	//IPAddress should be defined as an actual graph description, here we're only defining the TYPE
 	//string ipAddr; //String representation of IP, could be a range or what have you, need to build a utility for dealing with this	
+	
+};
 
+struct GateInstance
+{
+	Gateway* gateway;
+	IPAddress addressBlock;
+	vector<NodeInstance*> nodes;
 };
 
 typedef struct routeEntry
