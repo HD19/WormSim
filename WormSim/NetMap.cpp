@@ -344,6 +344,54 @@ IPAddress* NetworkMap::getIPBlock(unsigned int maskbits)
 	return toRet;
 }
 
+GateInstance* NetworkMap::buildGateInstance(RouteEntry* routeEntry)
+{
+
+	//Do all the stuff to build a GateInstance here.
+	Gateway* curGateway = gatewayMap[routeEntry->gateType->gateID];
+
+	//For this gateway, we have to generate a subnet of nodes
+	//Allocate address
+	IPAddress* freeAddrBlock = NULL;
+	
+	//If this is AUTO then there's no way we've evaluated this yet.
+	if(routeEntry->address == "AUTO")
+	{
+		freeAddrBlock = getIPBlock(curGateway->maskBits);
+		routeEntry->address = freeAddrBlock->getStrRep();
+	}
+	else
+	{
+		freeAddrBlock = getIPBlock(routeEntry->address, curGateway->maskBits);
+	}
+	//This block is illegal, no space, or something went wrong.
+	if(!freeAddrBlock)
+	{
+		return NULL;
+	}
+	//store the allocated block for later checking
+	allocatedIPs.push_back(freeAddrBlock);
+
+	//Generate gatewayInstance
+	//This is done by adding a vertex to the graph
+	vertexMap[routeEntry->address] = boost::add_vertex(this->netGraph); //add the new vertex, add the vertex to the vertex map.
+
+	Graph::vertex_descriptor& curVD = vertexMap[routeEntry->address];
+
+	GateInstance& curGateNode = netGraph[curVD];
+
+	//Set gateway information
+	curGateNode.gateway = curGateway;
+
+	//Set the node property address block
+	curGateNode.addressBlock = freeAddrBlock;
+		 
+	//build the list of nodes
+	curGateway->generateSubGraph( &(curGateNode.nodes) );
+
+	return &curGateNode;
+}
+
 bool NetworkMap::generateGraph()
 {
 
@@ -365,48 +413,44 @@ bool NetworkMap::generateGraph()
 			return false;
 		}
 
-		Gateway* curGateway = gatewayMap[curRouteEntry->gateType->gateID];
+		GateInstance* curGateInstance = buildGateInstance(curRouteEntry);
 
-		//For this gateway, we have to generate a subnet of nodes
-		//Generate gatewayInstance
-		//This is done by adding a vertex to the graph
-		vertexMap[curGateway->gateID] = boost::add_vertex(this->netGraph); //add the new vertex, add the vertex to the vertex map.
-		
-		Graph::vertex_descriptor& curVD = vertexMap[curGateway->gateID];
-
-		GateInstance& curGateNode = netGraph[curVD];
-
-		//Set gateway information
-		curGateNode.gateway = curGateway;
-
-		//Allocate address
-		IPAddress* freeAddrBlock = NULL;
-
-		if(curRouteEntry->address == "AUTO")
+		if(!curGateInstance)
 		{
-			freeAddrBlock = getIPBlock(curGateway->maskBits);
-		}
-		else
-		{
-			freeAddrBlock = getIPBlock(curRouteEntry->address, curGateway->maskBits);
-		}
-		//This block is illegal, no space, or something went wrong.
-		if(!freeAddrBlock)
-		{
+			cout << "[-] Error generating new gateway instances for route entry: " << curRouteEntry->address << endl;
 			return false;
 		}
-		//store the allocated block for later checking
-		allocatedIPs.push_back(freeAddrBlock);
 
-		//Set the node property address block
-		curGateNode.addressBlock = freeAddrBlock;
-		 
-		//build the list of nodes
-		curGateway->generateSubGraph( &(curGateNode.nodes) );
-		 
-		//This node should be set. Hook up the other nodes.
+		//This node should be set. Create and resolve edges now.
+		vector<RouteEntry*>& curEdges = curRouteEntry->edges;
 
-
+		for(uint i = 0; i < curEdges.size(); i++)
+		{
+			GateInstance* tmpGateInstance = NULL;
+			//We should create the GateInstance object for each route entry, then add an edge
+			if(vertexMap.find(curEdges[i]->address) == vertexMap.end())
+			{
+				tmpGateInstance = buildGateInstance(curEdges[i]);
+				if(!tmpGateInstance)
+				{
+					cout << "[-] Error generating new gateway instance for route entry: " << curRouteEntry->address << endl;
+					return false;
+				}
+			}
+			//If we're here, the two vertexes should exist.
+			try
+			{
+				Graph::vertex_descriptor& curVD = vertexMap[curEdges[i]->address]; //Vertex descriptor of the current gate instance
+				Graph::vertex_descriptor& tmpVD = vertexMap[curRouteEntry->address]; //Vertex descriptor that needs an edge added to the current gate instance
+				boost::add_edge(curVD, tmpVD, netGraph);
+			}
+			catch(exception& ex)
+			{
+				cout << "[-] Error adding edge between routes: " << curEdges[i]->address << " and " << curRouteEntry->address << " " << ex.what() << endl;
+				return false;
+			}
+		}
 	}
+
 	return false;
 }

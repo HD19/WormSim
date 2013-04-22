@@ -21,6 +21,7 @@ public:
 private:
 	bool readConfiguration();
 	bool generateGraph();
+	GateInstance* buildGateInstance(RouteEntry* routeEntry);
 	IPAddress* getIPBlock(string& inAddr, unsigned int maskBits);
 	IPAddress* getIPBlock(unsigned int maskBits);
 	MyRNG* theRNG;

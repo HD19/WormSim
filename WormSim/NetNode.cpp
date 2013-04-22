@@ -340,7 +340,7 @@ bool Gateway::generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>*
 			int toCreate = abs(mit->second); //just in case a negative is given.
 		
 			//Find the required node first.
-			int j = 0;
+			uint j = 0;
 
 			for(j = 0; j < nodeTypes.size(); j++)
 			{

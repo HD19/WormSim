@@ -23,9 +23,6 @@ IPAddress::IPAddress(string strIP): strAddress(strIP)
 		stringstream ss(strAddress);
 		string baseIP;
 		string tmpIP;
-		uint iBaseIP;
-		uint iFirstIP;
-		uint iLastIP;
 		unsigned char ext;
 		getline(ss, baseIP, '/');
 		getline(ss, tmpIP); //should be a number < 32
@@ -191,7 +188,7 @@ bool IPAddress::isInRange(const IPAddress& toCheck)
 				return (toCheck.intAddress >= this->startAddr->intAddress) && (toCheck.intAddress <= this->endAddr->intAddress);
 			}
 		}
-		return toCheck.intAddress;
+		return toCheck.intAddress == this->intAddress;
 }
 
 string IPAddress::strRep(uint toConvert)
