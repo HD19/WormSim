@@ -2,9 +2,6 @@
 #define _UTIL_H
 
 #include "Common.h"
-#include <random>
-
-typedef std::mt19937 MyRNG;
 
 using namespace std;
 

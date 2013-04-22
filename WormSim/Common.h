@@ -13,6 +13,9 @@
 #include <regex>
 #include <limits>
 #include <cstdint>
+#include <random>
+
+typedef std::mt19937 MyRNG;
 
 #define uint unsigned int
 
