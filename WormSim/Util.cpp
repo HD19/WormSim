@@ -64,6 +64,18 @@ IPAddress::IPAddress(uint intIP): intAddress(intIP)
 	updateReps();
 }
 
+IPAddress& IPAddress::operator=(const IPAddress& rhs)
+{
+	this->strAddress = rhs.strAddress;
+	this->intAddress = rhs.intAddress;
+	this->netmask = rhs.netmask;
+	this->addrCount = rhs.addrCount;
+	this->addrType = rhs.addrType;
+	this->startAddr = NULL;
+	this->endAddr = NULL;
+
+}
+
 uint IPAddress::getIntRep()
 {
 	//returns integer representation of IPAddr object

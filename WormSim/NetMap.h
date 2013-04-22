@@ -16,14 +16,21 @@ class NetworkMap
 {
 public:
 	NetworkMap();
+	NetworkMap(MyRNG* randomGen);
+	void setRNG(MyRNG* randomGen);
 private:
 	bool readConfiguration();
 	bool generateGraph();
+	IPAddress* getIPBlock(IPAddress& inAddr, unsigned int maskBits);
+	IPAddress* getIPBlock(unsigned int maskBits);
+	MyRNG* theRNG;
 	uint numNodes;
 	Graph netGraph;
+	vector<IPAddress*> allocatedIPs;
 	map<string, Vulnerability*> vulnMap;
 	map<string, NodeType*> nodeTypeMap;
 	map<string, Gateway*> gatewayMap;
+	map<string, Graph::vertex_descriptor> vertexMap;
 	vector<RouteEntry*> routeList;
 
 };

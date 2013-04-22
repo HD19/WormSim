@@ -4,9 +4,17 @@
 
 using namespace std;
 
+
 int main(int argc, char* argv[])
 {
-	NetworkMap mainNetMap;
+	MyRNG rng;
+
+	rng.seed(time(0));
+
+	NetworkMap mainNetMap(&rng);
+
+	
+
 	cout << "Done!" << endl;
 	return EXIT_SUCCESS;
 }

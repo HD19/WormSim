@@ -14,6 +14,28 @@ NetworkMap::NetworkMap()
 	return;
 }
 
+NetworkMap::NetworkMap(MyRNG* randomGen)
+{
+	theRNG = randomGen;
+	
+	//Construct and initialize a graph
+	if(this->readConfiguration())
+	{
+		cout << "[+] Network graph constructed with success" << endl;
+	}
+	else
+	{
+		cout << "[-] Error parsing configuration file at " << NET_CONFIG_PATH << endl;
+	}
+	return;
+}
+
+void NetworkMap::setRNG(MyRNG* randomGen)
+{
+	theRNG = randomGen;
+}
+
+
 bool NetworkMap::readConfiguration()
 {
 	//YAML reading magic should happen here!
@@ -274,8 +296,43 @@ bool NetworkMap::readConfiguration()
 	}
 }
 
+//Allocate a free IP block based on the requested start address and the number of mask bits
+//If this fails, it should return a null pointer.
+//If a null pointer comes back, it's the users fault for specifying an already allocated IP block
+IPAddress* NetworkMap::getIPBlock(IPAddress& inAddr, unsigned int maskBits)
+{
+
+
+}
+
+//Allocate a free IP block based on the requested address size
+IPAddress* NetworkMap::getIPBlock(unsigned int maskbits)
+{
+	IPAddress* toRet = NULL;
+
+
+	//Use IPAddress to check address.
+	IPaddress* tmpIP = IPAddress.generateRandomIP();
+
+	
+
+	for(unsigned int i = 0; i < allocatedIPs.size(); i++)
+	{
+		IPAddress& curIP = (*allocatedIPs[i]);
+
+	}
+}
+
 bool NetworkMap::generateGraph()
 {
+
+	MyRNG rng;
+	//Use fancy new C++11 random module
+	//Lets assume it was seeded already.
+	//Have to create a distribution
+	std::uniform_int_distribution<uint32_t> nodeDist(0, nodeTypes.size());
+
+
 	//For each route entry...
 	for(RouteVectorIter it = routeList.begin(); it != routeList.end(); it++)
 	{
@@ -288,9 +345,22 @@ bool NetworkMap::generateGraph()
 			return false;
 		}
 
-		Gateway* curGateway = gatewayMap[curRouteEntry->gateType];
+		Gateway* curGateway = gatewayMap[curRouteEntry->gateType->gateID];
 
 		//For this gateway, we have to generate a subnet of nodes
+		//Generate gatewayInstance
+		//This is done by adding a vertex to the graph
+		vertexMap[curGateway->gateID] = boost::add_vertex(this->netGraph); //add the new vertex, add the vertex to the vertex map.
+		
+		Graph::vertex_descriptor& curVD = vertexMap[curGateway->gateID];
+
+		//Set gateway informatino
+		 netGraph[curVD].gateway = curGateway;
+
+		 //Allocate address
+		 IPAddress* freeAddrBlock = getIPBlock(curRouteEntry->address, curGateway->maskBits);
+
+		 netGraph[curVD].addressBlock =
 
 	}
 	return false;

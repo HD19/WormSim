@@ -13,6 +13,7 @@ public:
 	IPAddress();
 	IPAddress(string strIP);
 	IPAddress(uint intIP);
+	IPAddress& operator=(const IPAddress& rhs);
 	uint operator-(const IPAddress& rhs);
 	uint getIntRep();
 	string& getStrRep();
@@ -20,6 +21,7 @@ public:
 	static string strRep(uint toConvert);
 	static bool   validateIP(string toValidate);
 	static bool   isCIDR(string toCheck);
+	static IPAddress generateRandomIP();
 	uint   getNetworkSize();
 	IPType getType();
 	//IPVect* getRangeIPs();

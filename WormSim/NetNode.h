@@ -13,8 +13,6 @@
 
 using namespace std;
 
-typedef boost::undirected_graph<> Graph;
-
 typedef std::mt19937 MyRNG;
 
 //Defines how the graph is distributed across different types in the gateway subgraph
@@ -114,5 +112,8 @@ typedef struct routeEntry
 } RouteEntry;
 
 typedef vector<RouteEntry*>::iterator RouteVectorIter;
+
+typedef boost::undirected_graph<GateInstance, boost::no_property, boost::no_property> Graph;
+
 
 #endif
