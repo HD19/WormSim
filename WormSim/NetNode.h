@@ -4,8 +4,6 @@
 #include <yaml-cpp\yaml.h>
 
 #include <boost\graph\undirected_graph.hpp>
-#include <map>
-#include <random>
 
 #include "Util.h"
 
@@ -13,7 +11,6 @@
 
 using namespace std;
 
-typedef std::mt19937 MyRNG;
 
 //Defines how the graph is distributed across different types in the gateway subgraph
 enum class GraphDist { Random, Count/*, Range, Manual*/ };
@@ -91,6 +88,7 @@ private:
 	uint maskBits; //Needs to be checked by creator against assigned address.
 	uint nodeCount;
 	MyRNG* theRng;
+	map<string, int> countMap;
 	//IPAddress should be defined as an actual graph description, here we're only defining the TYPE
 	//string ipAddr; //String representation of IP, could be a range or what have you, need to build a utility for dealing with this	
 	
@@ -99,7 +97,7 @@ private:
 struct GateInstance
 {
 	Gateway* gateway;
-	IPAddress addressBlock;
+	IPAddress* addressBlock;
 	vector<NodeInstance*> nodes;
 };
 

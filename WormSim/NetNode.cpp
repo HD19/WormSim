@@ -232,7 +232,9 @@ void Gateway::operator << (const YAML::Node& node)
 			const YAML::Node& countNode = node["NodeDist"];
 			//define and read in our count matrix.
 			//Generate a map and pass it to the function so it deletes itself.
-			map<string, int> tmpCountMap;
+			//OLD: map<string, int> tmpCountMap;
+			//The gateway should maintain the count map as a member
+
 
 			for (YAML::Iterator it = distNode.begin(); it != distNode.end(); it++)
 			{
@@ -242,7 +244,7 @@ void Gateway::operator << (const YAML::Node& node)
 				it.first() >> nodeName;
 				it.second() >> nodeCount;
 
-				tmpCountMap[nodeName] = nodeCount;
+				countMap[nodeName] = nodeCount;
 			}
 			//Since we have to link this stuff up in the NetMap, we'll call this later.
 			/*if(!generateSubGraph(tmpCountMap))
@@ -279,7 +281,6 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 	//Take advantage of the already calculated node count
 	//Generate a GatewayMap, representing edge nodes in our super graph
 	//We assume linking has already been done. Let's check anyway
-
 	if(! nodeTypes.size())
 	{
 		cout << "[-] Error generating gateway subgraph template: There are no nodetypes defined" << endl;
@@ -290,6 +291,12 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 	{
 		cout << "[-] Error generating gateway subraph template: No random number generator was set!" << endl;
 		return false;
+	}
+
+	//If we have a countmap generated from the COUNT DistType, act as a wrapper for the overloadded countmap method
+	if(countMap.size() > 0)
+	{
+		return generateSubGraph(this->countMap, target);
 	}
 
 	MyRNG& rng = (*theRng);
@@ -318,6 +325,9 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 	return true;
 }
 
+//Node Map is a count map
+//Need to figure out who's responsible for generating the count node map
+//Why isn't it the Gateway parser?
 bool Gateway::generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>* target)
 {
 	//NodeMap is a mapping given whenever user defines a 'Count' node distribution

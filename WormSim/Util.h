@@ -17,11 +17,14 @@ public:
 	uint operator-(const IPAddress& rhs);
 	uint getIntRep();
 	string& getStrRep();
+	bool  setMakBits(uint toSet);
 	static uint intRep(string toConvert);
 	static string strRep(uint toConvert);
 	static bool   validateIP(string toValidate);
 	static bool   isCIDR(string toCheck);
-	static IPAddress generateRandomIP();
+	static IPAddress generateRandomIP(MyRNG* rng);
+	static IPAddress generateRandomBlock(MyRNG* rng, uint maskBits);
+	bool   isInRange(const IPAddress& toCheck);
 	uint   getNetworkSize();
 	IPType getType();
 	//IPVect* getRangeIPs();

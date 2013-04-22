@@ -110,7 +110,7 @@ bool NetworkMap::readConfiguration()
 				for( YAML::Iterator it = gateNode.begin(); it != gateNode.end(); it++)
 				{
 					Gateway* tmpGate = new Gateway();
-
+					tmpGate->setRNG(theRNG);
 					(*tmpGate) << (*it);
 					gatewayMap[tmpGate->gateID] = tmpGate;
 				}
@@ -299,38 +299,58 @@ bool NetworkMap::readConfiguration()
 //Allocate a free IP block based on the requested start address and the number of mask bits
 //If this fails, it should return a null pointer.
 //If a null pointer comes back, it's the users fault for specifying an already allocated IP block
-IPAddress* NetworkMap::getIPBlock(IPAddress& inAddr, unsigned int maskBits)
+IPAddress* NetworkMap::getIPBlock(string& inAddr, unsigned int maskBits)
 {
+	//string input is an address.
+	//If the block won't fit anywhere, return a null pointer
+	IPAddress* toRet = NULL;
+	IPAddress  tmp(inAddr);
 
+	for(unsigned int i = 0; i < allocatedIPs.size(); i++)
+	{
+		IPAddress& curIP = (*allocatedIPs[i]);
+		if(tmp.isInRange(curIP))
+		{
+			//ToRet should be NULL
+			return toRet;
+		}
+	}
 
+	toRet = new IPAddress(inAddr);
+	return toRet;
 }
 
 //Allocate a free IP block based on the requested address size
 IPAddress* NetworkMap::getIPBlock(unsigned int maskbits)
 {
 	IPAddress* toRet = NULL;
-
-
 	//Use IPAddress to check address.
-	IPaddress* tmpIP = IPAddress.generateRandomIP();
+	IPAddress tmpIP = IPAddress::generateRandomBlock(theRNG, maskbits);
 
-	
 
+	//Get an IP that isn't in the way of anyone
 	for(unsigned int i = 0; i < allocatedIPs.size(); i++)
 	{
 		IPAddress& curIP = (*allocatedIPs[i]);
-
+		while(tmpIP.isInRange(curIP))
+		{
+			//WARNING: might eat up memory if this is implemented incorrectly
+			tmpIP = IPAddress::generateRandomBlock(theRNG, maskbits);
+		}
 	}
+
+	toRet = new IPAddress(tmpIP);
+	//this gives a free IP block, make a copy then return it.
+	return toRet;
 }
 
 bool NetworkMap::generateGraph()
 {
 
-	MyRNG rng;
 	//Use fancy new C++11 random module
 	//Lets assume it was seeded already.
 	//Have to create a distribution
-	std::uniform_int_distribution<uint32_t> nodeDist(0, nodeTypes.size());
+	std::uniform_int_distribution<uint32_t> nodeDist(0, nodeTypeMap.size());
 
 
 	//For each route entry...
@@ -354,13 +374,38 @@ bool NetworkMap::generateGraph()
 		
 		Graph::vertex_descriptor& curVD = vertexMap[curGateway->gateID];
 
-		//Set gateway informatino
-		 netGraph[curVD].gateway = curGateway;
+		GateInstance& curGateNode = netGraph[curVD];
 
-		 //Allocate address
-		 IPAddress* freeAddrBlock = getIPBlock(curRouteEntry->address, curGateway->maskBits);
+		//Set gateway information
+		curGateNode.gateway = curGateway;
 
-		 netGraph[curVD].addressBlock =
+		//Allocate address
+		IPAddress* freeAddrBlock = NULL;
+
+		if(curRouteEntry->address == "AUTO")
+		{
+			freeAddrBlock = getIPBlock(curGateway->maskBits);
+		}
+		else
+		{
+			freeAddrBlock = getIPBlock(curRouteEntry->address, curGateway->maskBits);
+		}
+		//This block is illegal, no space, or something went wrong.
+		if(!freeAddrBlock)
+		{
+			return false;
+		}
+		//store the allocated block for later checking
+		allocatedIPs.push_back(freeAddrBlock);
+
+		//Set the node property address block
+		curGateNode.addressBlock = freeAddrBlock;
+		 
+		//build the list of nodes
+		curGateway->generateSubGraph( &(curGateNode.nodes) );
+		 
+		//This node should be set. Hook up the other nodes.
+
 
 	}
 	return false;

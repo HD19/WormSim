@@ -21,7 +21,7 @@ public:
 private:
 	bool readConfiguration();
 	bool generateGraph();
-	IPAddress* getIPBlock(IPAddress& inAddr, unsigned int maskBits);
+	IPAddress* getIPBlock(string& inAddr, unsigned int maskBits);
 	IPAddress* getIPBlock(unsigned int maskBits);
 	MyRNG* theRNG;
 	uint numNodes;

@@ -16,6 +16,7 @@ IPAddress::IPAddress(string strIP): strAddress(strIP)
 	{
 		throw new exception("Invalid IP string given for IPAddress construction");
 	}
+	//Starting address should ONLY be defined for ranges!
 	if(isCIDR(strAddress))
 	{
 		//we got a CIDR address. Calculate the ranges and stuff
@@ -29,26 +30,23 @@ IPAddress::IPAddress(string strIP): strAddress(strIP)
 		getline(ss, baseIP, '/');
 		getline(ss, tmpIP); //should be a number < 32
 
+
 		ext = (unsigned char)(atoi(tmpIP.c_str())& 0xFF);
 		if(ext > 32)
 		{
 			throw new exception("CIDR bits set too high!");
 			return;
 		}
-
-		//ext is the number of bits set
-		//get the base IP
-		iBaseIP = intRep(baseIP);
-		int mask = (INT32_MIN >> ext); //arithmetic shift right, should be shifting in ones from the left
-		iFirstIP = (iBaseIP & mask);    //Get the first address
-		int invMask = !(mask);			// make the other bits 0
-		iLastIP = iFirstIP + invMask;
-		startAddr = new IPAddress(iFirstIP);
-		endAddr = new IPAddress(iLastIP);
-		netmask = mask;
-		addrCount = (endAddr - startAddr) + 1;
+		//WARNING: There might be an error here, this can fail.
+		if(!this->setMakBits(ext))
+		{
+			throw new exception("Invalid bits given for mask in CIDR address IPAddr Construction!");
+			return;
+			
+		}
 	}
 	updateReps();
+	return;
 }
 
 IPAddress::IPAddress(uint intIP): intAddress(intIP)
@@ -71,9 +69,64 @@ IPAddress& IPAddress::operator=(const IPAddress& rhs)
 	this->netmask = rhs.netmask;
 	this->addrCount = rhs.addrCount;
 	this->addrType = rhs.addrType;
-	this->startAddr = NULL;
-	this->endAddr = NULL;
+	if(this->addrType == IPType::Range)
+	{
+		this->startAddr = new IPAddress(rhs.startAddr->intAddress);
+		this->endAddr = new IPAddress(rhs.endAddr->intAddress);
+	}
+	else
+	{
+		this->startAddr = NULL;
+		this->endAddr = NULL;
+	}
+}
 
+IPAddress IPAddress::generateRandomIP(MyRNG* rng)
+{
+	//rng should be an initialized random number generator
+	std::uniform_int_distribution<uint32_t> octalDist(1, 255); //range is 1 - 255!
+
+	uint resIntIP = 0;
+
+	for(uint i = 0; i < 4; i++)
+	{
+		resIntIP |= ( octalDist(rng) << (24 - (8 * i)));
+	}
+	return IPAddress(resIntIP);
+}
+
+IPAddress IPAddress::generateRandomBlock(MyRNG* rng, uint maskBits)
+{
+	//get base address
+	IPAddress base = generateRandomIP(rng);
+
+	//make it a block
+	base.setMakBits(maskBits);
+	return base;
+}
+
+bool IPAddress::setMakBits(uint toSet)
+{
+	//we don't want to be able to set addresses to singles
+	if( (32 - toSet) < 1 || (32 - toSet) > 32 )
+	{
+		return false;
+	}
+	//turn the IP into a range by setting the mask bits and stuff.
+	addrType = IPType::Range;
+	//ext is the number of bits set
+	//get the base IP
+	uint iBaseIP = this->intAddress;
+	int mask = (INT32_MIN >> toSet); //arithmetic shift right, should be shifting in ones from the left
+	uint iFirstIP = (iBaseIP & mask);    //Get the first address
+	int invMask = !(mask);			// make the other bits 0
+	uint iLastIP = iFirstIP + invMask;
+	startAddr = new IPAddress(iFirstIP);
+	endAddr = new IPAddress(iLastIP);
+	netmask = mask;
+	addrCount = (endAddr - startAddr) + 1;
+
+	return true;
 }
 
 uint IPAddress::getIntRep()
@@ -121,6 +174,24 @@ uint IPAddress::intRep(string toConvert)
 		toRet |= (tmp << i*8);
 	}
 	return toRet;
+}
+
+bool IPAddress::isInRange(const IPAddress& toCheck)
+{
+		if(this->addrType == IPType::Range)
+		{
+			if(toCheck.addrType == IPType::Range)
+			{
+				//need to make sure ranges don't overlap
+				return ( ( (toCheck.startAddr->intAddress <= this->endAddr->intAddress)  && (toCheck.startAddr->intAddress >= this->startAddr->intAddress) ) ||
+						 ( (toCheck.endAddr->intAddress <= this->endAddr->intAddress) && (toCheck.endAddr->intAddress >= this->startAddr->intAddress) ) );
+			}
+			else
+			{
+				return (toCheck.intAddress >= this->startAddr->intAddress) && (toCheck.intAddress <= this->endAddr->intAddress);
+			}
+		}
+		return toCheck.intAddress;
 }
 
 string IPAddress::strRep(uint toConvert)
