@@ -113,6 +113,20 @@ bool NetworkMap::readConfiguration()
 					tmpGate->setRNG(theRNG);
 					(*tmpGate) << (*it);
 					gatewayMap[tmpGate->gateID] = tmpGate;
+
+					//need to resolve node types
+					for(uint i = 0; i < tmpGate->nodeTypesToAdd.size(); i++)
+					{
+						const vector<string>& toRes = tmpGate->nodeTypesToAdd;
+
+						if(nodeTypeMap.find(toRes[i]) == nodeTypeMap.end())
+						{
+							string exceptStr = "NodeType " + toRes[i] + " not recognized!";
+							throw new exception(exceptStr.c_str());
+						}
+
+						tmpGate->nodeTypes.push_back(nodeTypeMap[toRes[i]]);
+					}
 				}
 			}
 			catch(exception& ex)
@@ -412,8 +426,21 @@ bool NetworkMap::generateGraph()
 			cout << "[-] Error genertating route graph: couldn't find route gate type: " << curRouteEntry->gateType << " in gateway map!" << endl;
 			return false;
 		}
+		GateInstance* curGateInstance = NULL;
+		//Need to make sure we didn't already create a route for this.
+		if(vertexMap.find(curRouteEntry->address) == vertexMap.end())
+		{
+			//we already created this node!
+#if _DEBUG
+			cout << "[!] Already have an entry for : " << curRouteEntry->address << endl;
+#endif
+			//Continue processing it's route list!
+			Graph::vertex_descriptor& tmpVD = vertexMap[curRouteEntry->address];
+			curGateInstance = &netGraph[tmpVD];
 
-		GateInstance* curGateInstance = buildGateInstance(curRouteEntry);
+		}
+
+		curGateInstance = buildGateInstance(curRouteEntry);
 
 		if(!curGateInstance)
 		{
@@ -452,5 +479,5 @@ bool NetworkMap::generateGraph()
 		}
 	}
 
-	return false;
+	return true;
 }

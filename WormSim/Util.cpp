@@ -59,6 +59,8 @@ IPAddress::IPAddress(uint intIP): intAddress(intIP)
 	updateReps();
 }
 
+
+
 IPAddress& IPAddress::operator=(const IPAddress& rhs)
 {
 	this->strAddress = rhs.strAddress;
@@ -76,6 +78,8 @@ IPAddress& IPAddress::operator=(const IPAddress& rhs)
 		this->startAddr = NULL;
 		this->endAddr = NULL;
 	}
+
+	return *this;
 }
 
 IPAddress IPAddress::generateRandomIP(MyRNG* rng)
@@ -87,7 +91,8 @@ IPAddress IPAddress::generateRandomIP(MyRNG* rng)
 
 	for(uint i = 0; i < 4; i++)
 	{
-		resIntIP |= ( octalDist(rng) << (24 - (8 * i)));
+		uint piece = octalDist(*rng);
+		//resIntIP |= ( octalDist(rng) << (24 - (8 * i)));
 	}
 	return IPAddress(resIntIP);
 }
@@ -240,9 +245,9 @@ bool IPAddress::validateIP(string toValidate)
 {
 	//lets do a try catch on parsing.
 	string ipStr("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-	string cidrStr(ipStr.substr(0, ipStr.length()-2)); //We want the string minus the ending character
+	string cidrStr(ipStr.substr(0, ipStr.length()-1)); //We want the string minus the ending character
 	
-	cidrStr += "/[012]?\\d|3[012]$";
+	cidrStr += "/([012]?\\d|3[012])$";
 
 	regex ipReg(ipStr);
 	regex cidrReg(cidrStr);
