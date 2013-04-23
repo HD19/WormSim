@@ -423,25 +423,26 @@ bool NetworkMap::generateGraph()
 		
 		if(gatewayMap.find(curRouteEntry->gateType->gateID) == gatewayMap.end())
 		{
-			cout << "[-] Error genertating route graph: couldn't find route gate type: " << curRouteEntry->gateType << " in gateway map!" << endl;
+			cout << "[-] Error generating route graph: couldn't find route gate type: " << curRouteEntry->gateType << " in gateway map!" << endl;
 			return false;
 		}
 		GateInstance* curGateInstance = NULL;
 		//Need to make sure we didn't already create a route for this.
-		if(vertexMap.find(curRouteEntry->address) == vertexMap.end())
+		if(vertexMap.find(curRouteEntry->address) != vertexMap.end())
 		{
 			//we already created this node!
 #if _DEBUG
 			cout << "[!] Already have an entry for : " << curRouteEntry->address << endl;
 #endif
 			//Continue processing it's route list!
-			Graph::vertex_descriptor& tmpVD = vertexMap[curRouteEntry->address];
-			curGateInstance = &netGraph[tmpVD];
+			Graph::vertex_descriptor& sVD = vertexMap[curRouteEntry->address];
+			curGateInstance = &netGraph[sVD];
 
 		}
-
-		curGateInstance = buildGateInstance(curRouteEntry);
-
+		else
+		{
+			curGateInstance = buildGateInstance(curRouteEntry);
+		}
 		if(!curGateInstance)
 		{
 			cout << "[-] Error generating new gateway instances for route entry: " << curRouteEntry->address << endl;

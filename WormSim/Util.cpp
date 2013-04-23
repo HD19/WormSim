@@ -92,7 +92,7 @@ IPAddress IPAddress::generateRandomIP(MyRNG* rng)
 	for(uint i = 0; i < 4; i++)
 	{
 		uint piece = octalDist(*rng);
-		//resIntIP |= ( octalDist(rng) << (24 - (8 * i)));
+		resIntIP |= ( piece << (24 - (8 * i)));
 	}
 	return IPAddress(resIntIP);
 }
@@ -208,8 +208,8 @@ string IPAddress::strRep(uint toConvert)
 
 	for(int i = 3; i >= 0; i--)
 	{
-		ss << bytes[i];
-		if(!i)
+		ss << (int)bytes[i];
+		if(i)
 		{
 			ss << '.';
 		}
