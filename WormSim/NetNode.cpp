@@ -275,7 +275,12 @@ void Gateway::operator << (const YAML::Node& node)
 	return;
 }
 
-bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
+uint Gateway::getNodeCount()
+{
+	return this->nodeCount;
+}
+
+bool Gateway::generateSubGraph(IPAddress& ipBlock, vector<NodeInstance*>* target)
 {
 	//This is a random subgraph, generate a subgraph with a chance of each node being created to have a different type, depending on the max node count.
 	//Take advantage of the already calculated node count
@@ -296,7 +301,7 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 	//If we have a countmap generated from the COUNT DistType, act as a wrapper for the overloadded countmap method
 	if(countMap.size() > 0)
 	{
-		return generateSubGraph(this->countMap, target);
+		return generateSubGraph(this->countMap, ipBlock, target);
 	}
 
 	MyRNG& rng = (*theRng);
@@ -304,6 +309,8 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 	//Lets assume it was seeded already.
 	//Have to create a distribution
 	std::uniform_int_distribution<uint32_t> nodeDist(0, nodeTypes.size());
+	uint curAddr = ipBlock.getStartAddr()->getIntRep();
+	uint endAddr = ipBlock.getEndAddr()->getIntRep();
 
 	for(uint i = 0; i < nodeCount ; i++)
 	{
@@ -317,6 +324,13 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 		//tmp-> nAddr //This has to be set by somemone else
 		tmp->nStatus = NodeStatus::Clean;
 		tmp->nType = nodeTypes[typeIndex];
+		tmp->nAddr = curAddr;
+		curAddr++;
+		if(curAddr > endAddr)
+		{
+			cout << "[-] Error generating subgraph, allocated too many addresses" << endl;
+			return false;
+		}
 
 		//Target should be pointing at a live Gateway subgraph
 		target->push_back(tmp);
@@ -328,10 +342,31 @@ bool Gateway::generateSubGraph(vector<NodeInstance*>* target)
 //Node Map is a count map
 //Need to figure out who's responsible for generating the count node map
 //Why isn't it the Gateway parser?
-bool Gateway::generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>* target)
+bool Gateway::generateSubGraph(map<string, int>& nodeMap, IPAddress& ipBlock, vector<NodeInstance*>* target)
 {
 	//NodeMap is a mapping given whenever user defines a 'Count' node distribution
 	map<string,int>::iterator mit;
+	uint nMapCount = 0;
+
+	if(ipBlock.getType() == IPType::Single && nodeMap.size() != 1)
+	{
+		cout << "[-] Error generating subgraph, not enough addresses provided!" << endl;
+		return false;
+	}
+	for(mit = nodeMap.begin(); mit != nodeMap.end(); mit++)
+	{
+		nMapCount += mit->second;
+	}
+
+
+	if(ipBlock.getNetworkSize() < nMapCount)
+	{
+		cout << "[-] Error generating subgraph, not enough addresses provided!" << endl;
+		return false;
+	}
+
+	uint curAddr = ipBlock.getStartAddr()->getIntRep();
+	uint endAddr = ipBlock.getEndAddr()->getIntRep();
 
 	try
 	{
@@ -355,6 +390,13 @@ bool Gateway::generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>*
 				NodeInstance* tmp = new NodeInstance;
 				tmp->nStatus = NodeStatus::Clean;
 				tmp->nType = nodeTypes[j];
+				tmp->nAddr = curAddr;
+				curAddr++;
+				if(curAddr > endAddr)
+				{
+					cout << "[-] Error generating subgraph, allocated too many addresses" << endl;
+					return false;
+				}
 			}
 		}
 	}

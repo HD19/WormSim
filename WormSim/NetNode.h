@@ -76,9 +76,10 @@ public:
 	void operator << (const YAML::Node& node);
 protected:
 	void setRNG(MyRNG* ref);
-	bool generateSubGraph(vector<NodeInstance*>* target); // Will generate a graph based on the given configuration and distribution.
-	bool generateSubGraph(map<string, int>& nodeMap, vector<NodeInstance*>* target);
+	bool generateSubGraph(IPAddress& ipBlock, vector<NodeInstance*>* target); // Will generate a graph based on the given configuration and distribution.
+	bool generateSubGraph(map<string, int>& nodeMap, IPAddress& ipBlock, vector<NodeInstance*>* target);
 	NTVect nodeTypes;
+	uint getNodeCount();
 	vector<string> nodeTypesToAdd;
 private:
 	//bool generateSubGraph(map<string, vector<string>>& nodeMap); This is if we had the manual method defined.

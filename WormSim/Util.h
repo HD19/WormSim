@@ -17,7 +17,7 @@ public:
 	uint operator-(const IPAddress& rhs);
 	uint getIntRep();
 	string& getStrRep();
-	bool  setMakBits(uint toSet);
+	bool  setMaskBits(uint toSet);
 	static uint intRep(string toConvert);
 	static string strRep(uint toConvert);
 	static bool   validateIP(string toValidate);
@@ -25,6 +25,8 @@ public:
 	static IPAddress generateRandomIP(MyRNG* rng);
 	static IPAddress generateRandomBlock(MyRNG* rng, uint maskBits);
 	bool   isInRange(const IPAddress& toCheck);
+	IPAddress* getStartAddr();
+	IPAddress* getEndAddr();
 	uint   getNetworkSize();
 	IPType getType();
 	//IPVect* getRangeIPs();

@@ -3,6 +3,7 @@
 NetworkMap::NetworkMap()
 {
 	//Construct and initialize a graph
+	this->numNodes = 0;
 	if(this->readConfiguration())
 	{
 		cout << "[+] Network graph constructed with success" << endl;
@@ -17,7 +18,7 @@ NetworkMap::NetworkMap()
 NetworkMap::NetworkMap(MyRNG* randomGen)
 {
 	theRNG = randomGen;
-	
+	this->numNodes = 0;
 	//Construct and initialize a graph
 	if(this->readConfiguration())
 	{
@@ -331,6 +332,7 @@ IPAddress* NetworkMap::getIPBlock(string& inAddr, unsigned int maskBits)
 	}
 
 	toRet = new IPAddress(inAddr);
+	toRet->setMaskBits(maskBits);
 	return toRet;
 }
 
@@ -401,7 +403,9 @@ GateInstance* NetworkMap::buildGateInstance(RouteEntry* routeEntry)
 	curGateNode.addressBlock = freeAddrBlock;
 		 
 	//build the list of nodes
-	curGateway->generateSubGraph( &(curGateNode.nodes) );
+	curGateway->generateSubGraph( *(curGateNode.addressBlock), &(curGateNode.nodes) );
+
+	this->numNodes += curGateNode.gateway->getNodeCount();
 
 	return &curGateNode;
 }

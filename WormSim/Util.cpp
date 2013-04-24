@@ -16,6 +16,8 @@ IPAddress::IPAddress(string strIP): strAddress(strIP)
 	{
 		throw new exception("Invalid IP string given for IPAddress construction");
 	}
+	this->startAddr = NULL;
+	this->endAddr = NULL;
 	//Starting address should ONLY be defined for ranges!
 	if(isCIDR(strAddress))
 	{
@@ -35,7 +37,7 @@ IPAddress::IPAddress(string strIP): strAddress(strIP)
 			return;
 		}
 		//WARNING: There might be an error here, this can fail.
-		if(!this->setMakBits(ext))
+		if(!this->setMaskBits(ext))
 		{
 			throw new exception("Invalid bits given for mask in CIDR address IPAddr Construction!");
 			return;
@@ -56,6 +58,8 @@ IPAddress::IPAddress(uint intIP): intAddress(intIP)
 	}
 
 	this->addrType = IPType::Single;
+	this->startAddr = NULL;
+	this->endAddr = NULL;
 	updateReps();
 }
 
@@ -103,11 +107,11 @@ IPAddress IPAddress::generateRandomBlock(MyRNG* rng, uint maskBits)
 	IPAddress base = generateRandomIP(rng);
 
 	//make it a block
-	base.setMakBits(maskBits);
+	base.setMaskBits(maskBits);
 	return base;
 }
 
-bool IPAddress::setMakBits(uint toSet)
+bool IPAddress::setMaskBits(uint toSet)
 {
 	//we don't want to be able to set addresses to singles
 	if( (32 - toSet) < 1 || (32 - toSet) > 32 )
@@ -283,4 +287,14 @@ uint IPAddress::getNetworkSize()
 IPType IPAddress::getType()
 {
 	return addrType;
+}
+
+IPAddress* IPAddress::getStartAddr()
+{
+	return this->startAddr;
+}
+
+IPAddress* IPAddress::getEndAddr()
+{
+	return this->endAddr;
 }
